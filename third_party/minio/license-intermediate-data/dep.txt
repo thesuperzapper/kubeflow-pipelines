@@ -212,7 +212,7 @@ github.com/minio/highwayhash
 github.com/minio/lsync
 github.com/minio/mc
 github.com/minio/minio-go
-github.com/minio/minio-go/v6
+github.com/minio/minio-go/v7
 github.com/minio/parquet-go
 github.com/minio/sha256-simd
 github.com/minio/sio

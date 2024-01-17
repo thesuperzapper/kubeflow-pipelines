@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -31,7 +32,7 @@ import (
 	"github.com/kubeflow/pipelines/backend/src/apiserver/model"
 	"github.com/kubeflow/pipelines/backend/src/apiserver/storage"
 	"github.com/kubeflow/pipelines/backend/src/common/util"
-	"github.com/minio/minio-go/v6"
+	"github.com/minio/minio-go/v7"
 )
 
 const (
@@ -407,7 +408,7 @@ func initMinioClient(initConnectionTimeout time.Duration) storage.ObjectStoreInt
 
 func createMinioBucket(minioClient *minio.Client, bucketName, region string) {
 	// Check to see if we already own this bucket.
-	exists, err := minioClient.BucketExists(bucketName)
+	exists, err := minioClient.BucketExists(context.Background(), bucketName)
 	if err != nil {
 		glog.Fatalf("Failed to check if Minio bucket exists. Error: %v", err)
 	}
@@ -416,7 +417,7 @@ func createMinioBucket(minioClient *minio.Client, bucketName, region string) {
 		return
 	}
 	// Create bucket if it does not exist
-	err = minioClient.MakeBucket(bucketName, region)
+	err = minioClient.MakeBucket(context.Background(), bucketName, minio.MakeBucketOptions{Region: region})
 	if err != nil {
 		glog.Fatalf("Failed to create Minio bucket. Error: %v", err)
 	}
