@@ -1,0 +1,315 @@
+name: Build KFP Images (TEMPLATE)
+on:
+  workflow_call:
+    inputs:
+      image_name_prefix:
+        required: true
+        description: "the image name prefix for all images (e.g. ghcr.io/deployKF/kubeflow-pipelines)"
+        type: string
+
+      build_platforms:
+        required: true
+        description: "docker buildx platforms to build for, whitespace separated"
+        type: string
+      build_cache_prefix:
+        required: true
+        description: "the image name prefix for all registry build caches (e.g. ghcr.io/deployKF/ci/kubeflow-pipelines)"
+        type: string
+
+      tag_with_latest:
+        default: false
+        description: "if true, image tags will include 'latest'"
+        type: boolean
+      tag_with_semver:
+        default: false
+        description: "if true, image tags will include the version (from git tag event, without 'v' prefix)"
+        type: boolean
+      tag_with_sha:
+        default: false
+        description: "if true, image tags will include the commit SHA (both short and long)"
+        type: boolean
+
+      login_to_ghcr:
+        default: false
+        description: "if true, login to GitHub Container Registry with the GITHUB_TOKEN"
+        type: boolean
+      login_to_docker:
+        default: false
+        description: "if true, login to DockerHub using the DOCKER_USERNAME and DOCKER_PASSWORD secrets in the repository"
+        type: boolean
+
+jobs:
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/api-server
+  ## ================================================================
+  build__api_server:
+    name: Build - API Server
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/api-server
+
+      metadata_title: "Kubeflow Pipelines - API Server"
+      metadata_description: "The API server for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/api-server:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/cache-server
+  ## ================================================================
+  build__cache_server:
+    name: Build - Cache Server
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/cache-server
+
+      metadata_title: "Kubeflow Pipelines - Cache Server"
+      metadata_description: "The cache server for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.cacheserver
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/cache-server:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/frontend
+  ## ================================================================
+  build__frontend:
+    name: Build - Frontend
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/frontend
+
+      metadata_title: "Kubeflow Pipelines - Frontend"
+      metadata_description: "The frontend for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./frontend/Dockerfile
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/frontend:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/metadata-envoy
+  ## ================================================================
+  build__metadata_envoy:
+    name: Build - Metadata Envoy
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/metadata-envoy
+
+      metadata_title: "Kubeflow Pipelines - Metadata Envoy"
+      metadata_description: "The upstream Envoy Proxy, with extra license information."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./third_party/metadata_envoy/Dockerfile
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/metadata-envoy:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/metadata-writer
+  ## ================================================================
+  build__metadata_writer:
+    name: Build - Metadata Writer
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/metadata-writer
+
+      metadata_title: "Kubeflow Pipelines - Metadata Writer"
+      metadata_description: "The metadata writer for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/metadata_writer/Dockerfile
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/metadata-writer:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/persistenceagent
+  ## ================================================================
+  build__persistence_agent:
+    name: Build - Persistence Agent
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/persistenceagent
+
+      metadata_title: "Kubeflow Pipelines - Persistence Agent"
+      metadata_description: "The persistence agent for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.persistenceagent
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/persistenceagent:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/scheduledworkflow
+  ## ================================================================
+  build__scheduled_workflow:
+    name: Build - Scheduled Workflow Controller
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/scheduledworkflow
+
+      metadata_title: "Kubeflow Pipelines - Scheduled Workflow Controller"
+      metadata_description: "The scheduled workflow controller for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.scheduledworkflow
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/scheduledworkflow:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/viewer-crd-controller
+  ## ================================================================
+  build__viewer_crd_controller:
+    name: Build - Viewer CRD Controller
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/viewer-crd-controller
+
+      metadata_title: "Kubeflow Pipelines - Viewer CRD Controller"
+      metadata_description: "The viewer CRD controller for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.viewercontroller
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/viewer-crd-controller:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/visualization-server
+  ## ================================================================
+  build__visualization_server:
+    name: Build - Visualization Server
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/visualization-server
+
+      metadata_title: "Kubeflow Pipelines - Visualization Server"
+      metadata_description: "The visualization server for Kubeflow Pipelines."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.visualization
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/visualization-server:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/kfp-launcher
+  ## ================================================================
+  build__pipeline_launcher:
+    name: Build - Pipeline Launcher
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/kfp-launcher
+
+      metadata_title: "Kubeflow Pipelines - Pipeline Launcher"
+      metadata_description: "The pipeline launcher for Kubeflow Pipelines, used in workflow runs."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.launcher
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/kfp-launcher:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
+
+  ## ================================================================
+  ## UPSTREAM IMAGE: gcr.io/ml-pipeline/kfp-driver
+  ## ================================================================
+  build__pipeline_driver:
+    name: Build - Pipeline Driver
+    uses: ./.github/workflows/build_image_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_names: ${{ inputs.image_name_prefix }}/kfp-driver
+
+      metadata_title: "Kubeflow Pipelines - Pipeline Driver"
+      metadata_description: "The pipeline driver for Kubeflow Pipelines, used in workflow runs."
+
+      tag_with_latest: ${{ inputs.tag_with_latest }}
+      tag_with_semver: ${{ inputs.tag_with_semver }}
+      tag_with_sha: ${{ inputs.tag_with_sha }}
+
+      build_file: ./backend/Dockerfile.driver
+      build_context: .
+      build_platforms: ${{ inputs.build_platforms }}
+      build_registry_cache: ${{ inputs.build_cache_prefix }}/kfp-driver:build-cache
+
+      login_to_ghcr: ${{ inputs.login_to_ghcr }}
+      login_to_docker: ${{ inputs.login_to_docker }}
