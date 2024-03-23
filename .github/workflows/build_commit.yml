@@ -1,0 +1,22 @@
+name: Build Commit
+
+on:
+  push:
+    branches:
+      - fork-*
+
+permissions:
+  packages: write
+
+jobs:
+  build_kfp_images:
+    name: Build Kubeflow Pipelines Images
+    uses: ./.github/workflows/build_kfp_images_TEMPLATE.yml
+    secrets: inherit
+    with:
+      ## NOTE: we push SHA builds to the .../ci registry
+      image_name_prefix: ghcr.io/${{ github.repository_owner }}/ci/kubeflow-pipelines
+      build_platforms: linux/amd64
+      build_cache_prefix: ghcr.io/${{ github.repository_owner }}/ci/kubeflow-pipelines
+      tag_with_sha: true
+      login_to_ghcr: true

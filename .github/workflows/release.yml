@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build_kfp_images:
+    name: Build Kubeflow Pipelines Images
+    uses: ./.github/workflows/build_kfp_images_TEMPLATE.yml
+    secrets: inherit
+    with:
+      image_name_prefix: ghcr.io/${{ github.repository_owner }}/kubeflow-pipelines
+      build_platforms: linux/amd64
+      build_cache_prefix: ghcr.io/${{ github.repository_owner }}/ci/kubeflow-pipelines
+      tag_with_latest: false
+      tag_with_semver: true
+      login_to_ghcr: true
+
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [ build_kfp_images ]
+    steps:
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { repo: { owner, repo }, ref: tag_ref } = context;
+            const tag_name = tag_ref.replace('refs/tags/', '');
+            const tag_version = tag_ref.replace('refs/tags/v', '');
+
+            // Create a release
+            const response = await github.rest.repos.createRelease({
+              owner: owner,
+              repo: repo,
+              tag_name: tag_name,
+              name: `Kubeflow Pipelines - ${tag_version}`,
+              draft: false,
+              // NOTE: for this repo, we always have '-patch.X' in the tag name
+              //prerelease: tag_name.includes('-'),
+            });
