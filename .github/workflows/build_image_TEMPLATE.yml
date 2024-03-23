@@ -103,10 +103,10 @@ jobs:
           flavor: |
             latest=${{ inputs.tag_with_latest }}
           tags: |
-            type=semver,priority=1000,pattern={{version}},enabled=${{ inputs.tag_with_semver }}
-            type=semver,priority=900,pattern={{major}}.{{minor}},enabled=${{ inputs.tag_with_semver }}
-            type=sha,priority=200,prefix=sha-,format=short,enabled=${{ inputs.tag_with_sha }}
-            type=sha,priority=100,prefix=sha-,format=long,enabled=${{ inputs.tag_with_sha }}
+            type=semver,priority=1000,pattern={{version}},enable=${{ inputs.tag_with_semver }}
+            type=semver,priority=900,pattern={{major}}.{{minor}},enable=${{ inputs.tag_with_semver }}
+            type=sha,priority=200,prefix=sha-,format=short,enable=${{ inputs.tag_with_sha }}
+            type=sha,priority=100,prefix=sha-,format=long,enable=${{ inputs.tag_with_sha }}
           labels: |
             org.opencontainers.image.title=${{ inputs.metadata_title }}
             org.opencontainers.image.description=${{ inputs.metadata_description }}
