@@ -51,6 +51,14 @@ func OpenBucket(ctx context.Context, k8sClient kubernetes.Interface, namespace s
 		}
 	}()
 	if config.Scheme == "minio://" {
+		// if a query string is set, change schema to `s3://` and open the bucket directly
+		// they are probably using: https://gocloud.dev/howto/blob/#s3-compatible
+		if len(config.QueryString) > 0 {
+			bucketURL := config.bucketURL()
+			bucketURL = strings.Replace(bucketURL, "minio://", "s3://", 1)
+			return blob.OpenBucket(ctx, bucketURL)
+		}
+
 		cred, err := getMinioCredential(ctx, k8sClient, namespace)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to get minio credential: %w", err)
